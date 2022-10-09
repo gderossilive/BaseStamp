@@ -6,3 +6,5 @@ Disporre di un ambiente di test su Azure diventa perciò necessario per svolgere
 - Crearlo e distruggerlo all'occorrenza
 
 In questo repository pubblicheremo una serie di script Bicep per realizzare la seconda opzione. 
+
+

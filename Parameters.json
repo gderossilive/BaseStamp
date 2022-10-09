@@ -6,7 +6,7 @@
         "value": "abc"
       },
       "MyIP": {
-        "value": "81.56.1.134"
+        "value": ""
       },
       "Location": {
         "value": "eastus"
@@ -80,7 +80,7 @@
         "value": "OnPrem"
       },
       "MyObjectId": {
-        "value": "172b999c-c842-4969-9202-542c4c358035"
+        "value": ""
       },
       "OnPremVnetPrefix": {
         "value": "OnPrem-VLan"

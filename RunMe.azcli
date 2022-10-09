@@ -10,7 +10,7 @@ $adminPassword=(-join ((48..59) + (63..91) + (99..123) | Get-Random -count 15 | 
 az deployment sub create `
      --name "MainDeploy-$Seed" `
      --location $location `
-     --template-file 'Main.bicep' `
+     --template-file 'src\Main.bicep' `
      --parameters `
           Parameters.json `
           adminPassword=$adminPassword `

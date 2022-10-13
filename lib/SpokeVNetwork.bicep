@@ -1,5 +1,5 @@
 param virtualNetworkName string
-param vnetSddressPrefix string 
+param vnetAddressPrefix string 
 
 param PEsubnetName string 
 
@@ -10,6 +10,7 @@ param CustomDNSserver string
 param NSGname string
 param RouteTableId string
 param DeployGw bool 
+param DeployFirewall bool
 param location string = resourceGroup().location
 
 resource NSG 'Microsoft.Network/networkSecurityGroups@2021-02-01' = {
@@ -20,13 +21,35 @@ resource NSG 'Microsoft.Network/networkSecurityGroups@2021-02-01' = {
   }
 }
 
+module NoInternetSpoke 'AddNsgRule.bicep' = if (DeployFirewall) {
+  dependsOn: [
+    NSG
+  ]
+  name: 'NoInternet-${virtualNetworkName}'
+  params: {
+    protocol: 'Tcp'
+    sourcePortRange: '*'
+    sourceAddressPrefix: '*'
+    destinationAddressPrefix: 'Internet'
+    access: 'Deny'
+    priority: 1000
+    direction: 'Outbound'
+    sourcePortRanges: []
+    destinationPortRanges: [443,80]
+    sourceAddressPrefixes: []
+    destinationAddressPrefixes: []
+    NsgName: NSGname
+    RuleName: 'NoInternet'
+  }
+}
+
 resource vnet 'Microsoft.Network/virtualNetworks@2021-02-01' = {
   name: virtualNetworkName
   location: location
   properties: {
     addressSpace: {
       addressPrefixes: [
-        vnetSddressPrefix
+        vnetAddressPrefix
       ]
     }
     dhcpOptions: {

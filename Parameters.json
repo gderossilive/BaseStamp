@@ -6,7 +6,7 @@
         "value": "abc"
       },
       "MyIP": {
-        "value": ""
+        "value": "81.56.1.134"
       },
       "Location": {
         "value": "eastus"
@@ -80,7 +80,7 @@
         "value": "OnPrem"
       },
       "MyObjectId": {
-        "value": ""
+        "value": "172b999c-c842-4969-9202-542c4c358035"
       },
       "OnPremVnetPrefix": {
         "value": "OnPrem-VLan"
@@ -93,6 +93,9 @@
       },
       "OnPremPEvnetSubnetAddressPrefix": {
         "value": "192.168.1.0/24"
+      },
+      "OnPremDMZvnetSubnetAddressPrefix": {
+        "value": "192.168.2.0/24"
       },
       "adminPassword": {
         "value": ""

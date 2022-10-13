@@ -26,6 +26,7 @@ param Seed string
 param MyIPaddress string
 
 param DeployFirewall bool
+param DeployBastion bool
 
 var networkSecurityGroupName = 'NSG-${Seed}'
 //var KVname = 'KV-${Seed}'
@@ -86,6 +87,29 @@ module HubVnet './lib/HubVNetwork.bicep' = {
   }
 }
 
+module NoInternetHub 'lib/AddNsgRule.bicep' = if (DeployFirewall) {
+  dependsOn: [
+    HubVnet
+  ]
+  scope: HubRG
+  name: 'NoInternetHub'
+  params: {
+    protocol: 'Tcp'
+    sourcePortRange: '*'
+    sourceAddressPrefix: '*'
+    destinationAddressPrefix: 'Internet'
+    access: 'Deny'
+    priority: 1000
+    direction: 'Outbound'
+    sourcePortRanges: []
+    destinationPortRanges: [443,80]
+    sourceAddressPrefixes: []
+    destinationAddressPrefixes: []
+    NsgName: networkSecurityGroupName
+    RuleName: 'NoInternet'
+  }
+}
+
 
 module Resolver 'lib/Resolver.bicep' = {
   dependsOn: [
@@ -103,38 +127,6 @@ module Resolver 'lib/Resolver.bicep' = {
     OutEndName: OutSubnetName
   }
 }
-/*
-module KV './lib/KV.bicep' = {
-  dependsOn: [
-    HubVnet
-    Resolver
-  ]
-  name: KVname
-  scope: HubRG
-  params: {
-    keyVaultName: KVname
-    objectId: MyObjectId
-    VnetName: HubVnetName
-    SubnetName: PEsubnetName
-    MyIPaddress: MyIPaddress
-    RulesetName: Resolver.outputs.RulesetName
-    location: HubRG.location
-  }
-}
-
-module adminPasswd './lib/Secret.bicep' = {
-  dependsOn: [
-    KV
-  ]
-  name: 'adminPassword'
-  scope: HubRG
-  params: {
-    KVname: KVname
-    secretName: 'adminPassword'
-    secret: adminPassword
-  }
-}
-*/
 
 module AzFW 'lib/AzFW.bicep' = if (DeployFirewall) {
   dependsOn: [
@@ -149,9 +141,7 @@ module AzFW 'lib/AzFW.bicep' = if (DeployFirewall) {
   }
 }
 
-
-
-module Bastion 'lib/AzBastion.bicep' = {
+module Bastion 'lib/AzBastion.bicep' = if (DeployBastion) {
   dependsOn: [
     Resolver
   ]
@@ -171,3 +161,4 @@ output PEsubnetName string = PEsubnetName
 //output KvName string = KVname
 output RulesetName string = Resolver.outputs.RulesetName
 output FwIp string = (DeployFirewall) ? AzFW.outputs.FwIP : ''
+output FwName string = (DeployFirewall) ? FwName : ''

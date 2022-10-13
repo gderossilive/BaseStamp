@@ -10,6 +10,7 @@ param OnPremVnetName string
 param OnPremVnetAddressPrefix string 
 param OnPremGWvnetSubnetAddressPrefix string 
 param OnPremPEvnetSubnetAddressPrefix string
+param OnPremDMZvnetSubnetAddressPrefix string
 param HubVnetName string
 param CustomDNSserverAddress string
 
@@ -30,17 +31,25 @@ var OnPremVirtualNetworkGWName = 'OnPremVNGW-${Seed}'
 var HubVirtualNetworkGWName = 'HubVNGW-${Seed}'
 var Proxyname = 'Proxy-${Seed}'
 var PEsubnetName = 'PE-Subnet'
+var DMZsubnetName = 'DMZ-Subnet'
 var KVname = 'KV-${Seed}'
 
 
-
+resource HubRG 'Microsoft.Resources/resourceGroups@2021-01-01' existing = {
+  name: HubRGname
+}
 resource OnPremRG 'Microsoft.Resources/resourceGroups@2021-01-01' = {
   name: OnPremRGname
   location: location
 }
 
-resource HubRG 'Microsoft.Resources/resourceGroups@2021-01-01' existing = {
-  name: HubRGname
+module OnPremNSG 'lib/NSG.bicep' = {
+  scope: OnPremRG
+  name: OnPremRGname
+  params: {
+    NSGname: networkSecurityGroupName
+    location: location
+  }
 }
 
 module OnPremRT 'lib/RouteTable.bicep' = {
@@ -52,26 +61,65 @@ module OnPremRT 'lib/RouteTable.bicep' = {
   }
 }
 
-module OnPremVnet './lib/SpokeVNetwork.bicep' = {
-  name: OnPremVnetName
+module OnPremVNet 'lib/VirtualNetwork.bicep' = {
   scope: OnPremRG
+  name: OnPremVnetName
   params: {
     virtualNetworkName: OnPremVnetName
-    vnetSddressPrefix: OnPremVnetAddressPrefix
-    PEsubnetName:  PEsubnetName
-    PEsubnetAddressPrefix: OnPremPEvnetSubnetAddressPrefix
-    GatewaySubnetAddressPrefix: OnPremGWvnetSubnetAddressPrefix
-    DeployGw: true
-    NSGname: networkSecurityGroupName
-    RouteTableId: OnPremRT.outputs.RTid
+    vnetAddressPrefix: OnPremVnetAddressPrefix
+    CustomDNSserver: ''
     location: location
-    CustomDNSserver: CustomDNSserverAddress
+  }
+}
+
+module DMZsubnet 'lib/VirtualNetwork-Subnet.bicep' = if (DeployProxy) {
+  dependsOn: [
+    OnPremVNet
+  ]
+  scope: OnPremRG
+  name: DMZsubnetName
+  params: {
+    NsgId: ''
+    RtId:  ''
+    SubnetName: DMZsubnetName
+    SubnetAddressPrefix: OnPremDMZvnetSubnetAddressPrefix
+    VNetName: OnPremVnetName
+  }
+}
+
+module GWsubnet 'lib/VirtualNetwork-Subnet.bicep' = {
+  dependsOn: [
+    DMZsubnet
+  ]
+  scope: OnPremRG
+  name: 'GatewaySubnet'
+  params: {
+    NsgId: ''
+    RtId:  ''
+    SubnetName: 'GatewaySubnet'
+    VNetName: OnPremVnetName
+    SubnetAddressPrefix: OnPremGWvnetSubnetAddressPrefix
+  }
+}
+
+module PEsubnet 'lib/VirtualNetwork-Subnet.bicep' = {
+  dependsOn: [
+    GWsubnet
+  ]
+  scope: OnPremRG
+  name: 'PEsubnet'
+  params: {
+    NsgId: OnPremNSG.outputs.NsgId
+    RtId:  OnPremRT.outputs.RTid
+    SubnetName: 'PEsubnet'
+    VNetName: OnPremVnetName
+    SubnetAddressPrefix: OnPremPEvnetSubnetAddressPrefix
   }
 }
 
 module OnPremVNetGW 'lib/VirtualNetworkGateway.bicep' = {
   dependsOn: [
-    OnPremVnet
+    GWsubnet
   ]
   scope: OnPremRG
   name:  OnPremVirtualNetworkGWName
@@ -151,20 +199,20 @@ module adminPasswd './lib/Secret.bicep' = {
 
 module Proxy './lib/UbuntuVM.bicep' = if (DeployProxy) {
   dependsOn: [
-    OnPremVnet
+    DMZsubnet
   ]
   name: Proxyname
   scope: OnPremRG
   params: {
     vmName: Proxyname
     virtualNetworkName: OnPremVnetName
-    subnetName: PEsubnetName
+    subnetName: DMZsubnetName
     adminPassword: adminPassword
     location: OnPremRG.location
+    Command: 'sudo apt-get update && sudo apt-get install -y squid apache2-utils && sudo wget https://gdrcontent.z16.web.core.windows.net/whitelist.txt -O /etc/squid/whitelist.txt && sudo wget https://gdrcontent.z16.web.core.windows.net/squid.conf -O /etc/squid/squid.conf && sudo systemctl restart squid'
   }
 }
 
-/*
 module NoInternetOnPrem 'lib/AddNsgRule.bicep' = if (DeployProxy) {
   dependsOn: [
     Proxy
@@ -172,29 +220,23 @@ module NoInternetOnPrem 'lib/AddNsgRule.bicep' = if (DeployProxy) {
   scope: OnPremRG
   name: 'NoInternetOnPrem'
   params: {
-    destinationPortRange: '*'
     sourceAddressPrefixes: []
     access: 'Deny'
     NsgName: networkSecurityGroupName
+    RuleName: 'NoInternet'
     protocol: 'Tcp'
     sourcePortRange: '*'
     priority: 1000
     sourceAddressPrefix: '*'
     destinationAddressPrefix: 'Internet'
-    destinationPortRanges: [
-      443
-      80
-    ]
+    destinationPortRanges: [443,80]
     sourcePortRanges: []
     direction: 'Outbound'
     destinationAddressPrefixes: []
   }
-}*/
-
-
+}
 
 output OnPremVnetName string = OnPremVnetName
-//output DnsName string = DNSname
 output NSGname string = networkSecurityGroupName
 output PEsubnetName string = PEsubnetName
 output ProxyName string = (DeployProxy) ? Proxyname : ''

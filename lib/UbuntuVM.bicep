@@ -4,7 +4,7 @@ param adminUsername string = 'gdradmin'
 @description('Password for the Virtual Machine.')
 @minLength(12)
 @secure()
-param adminPassword string 
+param adminPassword string
 
 @description('Unique DNS Name for the Public IP used to access the Virtual Machine.')
 param dnsLabelPrefix string = toLower('${vmName}-${uniqueString(resourceGroup().id, vmName)}')
@@ -23,25 +23,6 @@ param publicIPAllocationMethod string = 'Dynamic'
 ])
 param publicIpSku string = 'Basic'
 
-@description('The Windows version for the VM. This will pick a fully patched image of this given Windows version.')
-@allowed([
-  '2008-R2-SP1'
-  '2012-Datacenter'
-  '2012-R2-Datacenter'
-  '2016-Nano-Server'
-  '2016-Datacenter-with-Containers'
-  '2016-Datacenter'
-  '2019-Datacenter'
-  '2019-Datacenter-Core'
-  '2019-Datacenter-Core-smalldisk'
-  '2019-Datacenter-Core-with-Containers'
-  '2019-Datacenter-Core-with-Containers-smalldisk'
-  '2019-Datacenter-smalldisk'
-  '2019-Datacenter-with-Containers'
-  '2019-Datacenter-with-Containers-smalldisk'
-])
-param OSVersion string = '2019-Datacenter'
-
 @description('Size of the virtual machine.')
 param vmSize string = 'Standard_B2ms'
 
@@ -54,13 +35,15 @@ param vmName string = 'simple-vm'
 @description('(Existing) Virtual Network and subent where to join the VM')
 param virtualNetworkName string 
 param subnetName string
-param PrivateIPAddress string = '10.10.1.50'
+param Command string = ''
 
-var seed = uniqueString(vmName, virtualNetworkName, subnetName)
+var seed = substring(uniqueString(vmName, virtualNetworkName, subnetName),0,5)
 var nicName = '${vmName}-Nic-${seed}'
 var publicIpName = '${vmName}-PIP-${seed}'
 
 
+
+/*
 resource pip 'Microsoft.Network/publicIPAddresses@2021-02-01' = {
   name: publicIpName
   location: location
@@ -73,7 +56,7 @@ resource pip 'Microsoft.Network/publicIPAddresses@2021-02-01' = {
       domainNameLabel: dnsLabelPrefix
     }
   }
-}
+}*/
 
 
 resource vn 'Microsoft.Network/virtualNetworks@2021-02-01' existing = {
@@ -88,11 +71,10 @@ resource nic 'Microsoft.Network/networkInterfaces@2021-02-01' = {
       {
         name: 'ipconfig1'
         properties: {
-          privateIPAllocationMethod: 'Static'
-          privateIPAddress: PrivateIPAddress
-          publicIPAddress: {
+          privateIPAllocationMethod: 'Dynamic'
+/*          publicIPAddress: {
             id: pip.id
-          }
+          }*/
           subnet: {
             id: resourceId('Microsoft.Network/virtualNetworks/subnets', vn.name, subnetName)
           }
@@ -116,9 +98,9 @@ resource vm 'Microsoft.Compute/virtualMachines@2021-03-01' = {
     }
     storageProfile: {
       imageReference: {
-        publisher: 'MicrosoftWindowsServer'
-        offer: 'WindowsServer'
-        sku: OSVersion
+        publisher: 'Canonical'
+        offer: 'UbuntuServer'
+        sku: '18.04-LTS'
         version: 'latest'
       }
       osDisk: {
@@ -144,28 +126,44 @@ resource vm 'Microsoft.Compute/virtualMachines@2021-03-01' = {
 }
 
 
-//resource ext 'Microsoft.Compute/virtualMachines/extensions@2021-04-01' = {
-//  name: '${vmName}/dscextension'
-//  location: location
-//  dependsOn: [
-//    vm
-//  ]
-//  properties: {
-//    publisher: 'Microsoft.Compute'
-//    type: 'CustomScriptExtension'
-//    typeHandlerVersion: '1.10'
-//    autoUpgradeMinorVersion: true
-//    settings: {
-//      timestamp: '123456789'
-//    }
-//    protectedSettings: {
-//      commandToExecute: Command
-//      storageAccountName: StorageName
-//      fileUris: [
-//        BlobSasUrl
-//      ]
-//    }
-//  }
-//}
+resource ext 'Microsoft.Compute/virtualMachines/extensions@2021-04-01' = if (Command != '') {
+  name: '${vmName}/CustomScriptExtension'
+  location: location
+  dependsOn: [
+    vm
+  ]
+  properties: {
+    publisher: 'Microsoft.Azure.Extensions'
+    type: 'CustomScript'
+    typeHandlerVersion: '2.1'
+    autoUpgradeMinorVersion: true
+    settings: {
+      skipDos2Unix: false
+      timestamp: 123456789
+    }
+    protectedSettings: {
+      commandToExecute: Command
+    }
+  }
+}
 
-output hostname string = pip.properties.dnsSettings.fqdn
+resource shutdown 'Microsoft.DevTestLab/schedules@2018-09-15' = {
+  name: 'shutdown-computevm-${vmName}'
+  location: location
+  properties: {
+    status: 'Enabled'
+    taskType: 'ComputeVmShutdownTask'
+    dailyRecurrence: {
+      time: '1900'
+    }
+    timeZoneId: 'W. Europe Standard Time'
+    notificationSettings: {
+      status: 'Disabled'
+      timeInMinutes: 30
+      notificationLocale: 'en'
+    }
+    targetResourceId: vm.id
+  }
+}
+
+output hostname string = vm.properties.osProfile.computerName

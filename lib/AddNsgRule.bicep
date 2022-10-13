@@ -1,7 +1,7 @@
 param NsgName string
+param RuleName string
 param protocol string
 param sourcePortRange string
-param destinationPortRange string
 param sourceAddressPrefix string
 param destinationAddressPrefix string
 param access string
@@ -13,17 +13,11 @@ param sourceAddressPrefixes array
 param destinationAddressPrefixes array
 
 
-resource NSG 'Microsoft.Network/networkSecurityGroups@2021-08-01' existing = {
-  name: NsgName
-}
-
-resource AllowAzureCloudOutbound 'Microsoft.Network/networkSecurityGroups/securityRules@2021-08-01' = {
-  parent: NSG
-  name: 'AllowAzureCloudOutbound'
+resource DisableAzureCloudOutbound 'Microsoft.Network/networkSecurityGroups/securityRules@2021-08-01' = {
+  name: '${NsgName}/${RuleName}'
   properties: {
     protocol: protocol
     sourcePortRange: sourcePortRange
-    destinationPortRange: destinationPortRange
     sourceAddressPrefix: sourceAddressPrefix
     destinationAddressPrefix: destinationAddressPrefix
     access: access

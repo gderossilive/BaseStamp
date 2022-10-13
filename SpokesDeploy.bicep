@@ -18,12 +18,12 @@ resource HubRG 'Microsoft.Resources/resourceGroups@2021-01-01' existing = {
   name: HubRGname
 }
 
-resource SpokeRG 'Microsoft.Resources/resourceGroups@2021-01-01' = {
+resource SpokeRG 'Microsoft.Resources/resourceGroups@2021-01-01' = if (Spokes>0) {
   name: SpokeRGname
   location: location
 }
 
-module SpokeRT 'lib/RouteTable.bicep' = {
+module SpokeRT 'lib/RouteTable.bicep' = if (Spokes>0) {
   scope: SpokeRG
   name: 'SpokeRT'
   params: {
@@ -32,7 +32,7 @@ module SpokeRT 'lib/RouteTable.bicep' = {
   }
 }
 
-module Route2FwHub 'lib/RouteToFW.bicep' = if (DeployFirewall) {
+module Route2FwHub 'lib/RouteToFW.bicep' = if (DeployFirewall && Spokes>0) {
   scope: SpokeRG
   name: 'Route2FwHub'
   params: {
@@ -43,13 +43,12 @@ module Route2FwHub 'lib/RouteToFW.bicep' = if (DeployFirewall) {
   }
 }
 
-
 module SpokesVnet './lib/SpokeVNetwork.bicep' = [for i in range(0,Spokes): {
   name: 'Spoke-VNet-${i}'
   scope: SpokeRG
   params: {
     virtualNetworkName: 'Spoke-VNet-${i}'
-    vnetSddressPrefix: '10.20.${i}.0/24'
+    vnetAddressPrefix: '10.20.${i}.0/24'
     PEsubnetName:  'PEsubnet-${i}-${Seed}'
     PEsubnetAddressPrefix: '10.20.${i}.0/24'
     GatewaySubnetAddressPrefix: ''
@@ -58,6 +57,7 @@ module SpokesVnet './lib/SpokeVNetwork.bicep' = [for i in range(0,Spokes): {
     location: location
     CustomDNSserver: CustomDNSserverAddress
     DeployGw: false
+    DeployFirewall: DeployFirewall
   }
 }]
 

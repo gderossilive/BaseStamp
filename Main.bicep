@@ -20,6 +20,7 @@ param PEsubnetAddressPrefix string
 param FirewallSubnetAddressPrefix string
 param GatewaySubnetAddressPrefix string
 param DeployFirewall bool
+param DeployBastion bool
 
 // Spoke parameter
 param SpokeRgPostfix string
@@ -34,6 +35,7 @@ param OnPremVnetPrefix string
 param OnPremVnetAddressPrefix string 
 param OnPremGWvnetSubnetAddressPrefix string 
 param OnPremPEvnetSubnetAddressPrefix string
+param OnPremDMZvnetSubnetAddressPrefix string
 @secure()
 param adminPassword string
 
@@ -51,6 +53,7 @@ module HubDeploy 'HubDeploy.bicep' = {
     BastionSubnetAddressPrefix: BastionSubnetAddressPrefix
     CustomDNSserver: CustomDNSserver
     DeployFirewall: DeployFirewall
+    DeployBastion: DeployBastion
     DNSInboundSubnetAddressPrefix: DNSInboundSubnetAddressPrefix
     DNSOutboundSubnetAddressPrefix: DNSOutboundSubnetAddressPrefix
     FirewallSubnetAddressPrefix: FirewallSubnetAddressPrefix
@@ -96,6 +99,7 @@ module OnPremDeploy 'OnPremDeploy.bicep' = if (DeployOnPrem) {
     MyObjectId: MyObjectId
     OnPremGWvnetSubnetAddressPrefix: OnPremGWvnetSubnetAddressPrefix
     OnPremPEvnetSubnetAddressPrefix: OnPremPEvnetSubnetAddressPrefix
+    OnPremDMZvnetSubnetAddressPrefix: OnPremDMZvnetSubnetAddressPrefix
     OnPremRGname: OnPremRGname
     OnPremVnetAddressPrefix: OnPremVnetAddressPrefix
     OnPremVnetName: OnPremVnetName
@@ -103,3 +107,10 @@ module OnPremDeploy 'OnPremDeploy.bicep' = if (DeployOnPrem) {
     Seed: Seed
   }
 }
+
+output ProxyName string = (DeployProxy) ? OnPremDeploy.outputs.ProxyName : ''
+output FwName string = (DeployFirewall) ? HubDeploy.outputs.FwName : ''
+output DnsIp string = HubDeploy.outputs.DNSIp
+output HubVNetName string = HubDeploy.outputs.HubVnetName
+output SpokesVnetNames array = (SpokesNumber > 0) ? SpokesDeploy.outputs.SpokesVnetName : []
+output OnpremVNetName string = (DeployOnPrem) ? OnPremDeploy.outputs.OnPremVnetName : ''

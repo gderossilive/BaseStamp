@@ -23,7 +23,7 @@ resource SpokeRG 'Microsoft.Resources/resourceGroups@2021-01-01' = if (Spokes>0)
   location: location
 }
 
-module SpokeRT 'lib/RouteTable.bicep' = if (Spokes>0) {
+module SpokeRT 'src/RouteTable.bicep' = if (Spokes>0) {
   scope: SpokeRG
   name: 'SpokeRT'
   params: {
@@ -32,7 +32,7 @@ module SpokeRT 'lib/RouteTable.bicep' = if (Spokes>0) {
   }
 }
 
-module Route2FwHub 'lib/RouteToFW.bicep' = if (DeployFirewall && Spokes>0) {
+module Route2FwHub 'src/RouteToFW.bicep' = if (DeployFirewall && Spokes>0) {
   scope: SpokeRG
   name: 'Route2FwHub'
   params: {
@@ -43,7 +43,7 @@ module Route2FwHub 'lib/RouteToFW.bicep' = if (DeployFirewall && Spokes>0) {
   }
 }
 
-module SpokesVnet './lib/SpokeVNetwork.bicep' = [for i in range(0,Spokes): {
+module SpokesVnet './src/SpokeVNetwork.bicep' = [for i in range(0,Spokes): {
   name: 'Spoke-VNet-${i}'
   scope: SpokeRG
   params: {
@@ -61,7 +61,7 @@ module SpokesVnet './lib/SpokeVNetwork.bicep' = [for i in range(0,Spokes): {
   }
 }]
 
-module Hub2Spoke './lib/NetworkPeering.bicep' = [for i in range(0,Spokes): {
+module Hub2Spoke './src/NetworkPeering.bicep' = [for i in range(0,Spokes): {
   dependsOn: [
     SpokesVnet
   ]
@@ -78,7 +78,7 @@ module Hub2Spoke './lib/NetworkPeering.bicep' = [for i in range(0,Spokes): {
   }
 }]
 
-module Spoke2Hub './lib/NetworkPeering.bicep' = [for i in range(0,Spokes): {
+module Spoke2Hub './src/NetworkPeering.bicep' = [for i in range(0,Spokes): {
   dependsOn: [
     SpokesVnet
   ]

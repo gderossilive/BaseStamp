@@ -43,7 +43,7 @@ resource OnPremRG 'Microsoft.Resources/resourceGroups@2021-01-01' = {
   location: location
 }
 
-module OnPremNSG 'lib/NSG.bicep' = {
+module OnPremNSG 'src/NSG.bicep' = {
   scope: OnPremRG
   name: OnPremRGname
   params: {
@@ -52,7 +52,7 @@ module OnPremNSG 'lib/NSG.bicep' = {
   }
 }
 
-module OnPremRT 'lib/RouteTable.bicep' = {
+module OnPremRT 'src/RouteTable.bicep' = {
   scope: OnPremRG
   name: 'OnPremRT'
   params: {
@@ -61,7 +61,7 @@ module OnPremRT 'lib/RouteTable.bicep' = {
   }
 }
 
-module OnPremVNet 'lib/VirtualNetwork.bicep' = {
+module OnPremVNet 'src/VirtualNetwork.bicep' = {
   scope: OnPremRG
   name: OnPremVnetName
   params: {
@@ -72,7 +72,7 @@ module OnPremVNet 'lib/VirtualNetwork.bicep' = {
   }
 }
 
-module DMZsubnet 'lib/VirtualNetwork-Subnet.bicep' = if (DeployProxy) {
+module DMZsubnet 'src/VirtualNetwork-Subnet.bicep' = if (DeployProxy) {
   dependsOn: [
     OnPremVNet
   ]
@@ -87,7 +87,7 @@ module DMZsubnet 'lib/VirtualNetwork-Subnet.bicep' = if (DeployProxy) {
   }
 }
 
-module GWsubnet 'lib/VirtualNetwork-Subnet.bicep' = {
+module GWsubnet 'src/VirtualNetwork-Subnet.bicep' = {
   dependsOn: [
     DMZsubnet
   ]
@@ -102,7 +102,7 @@ module GWsubnet 'lib/VirtualNetwork-Subnet.bicep' = {
   }
 }
 
-module PEsubnet 'lib/VirtualNetwork-Subnet.bicep' = {
+module PEsubnet 'src/VirtualNetwork-Subnet.bicep' = {
   dependsOn: [
     GWsubnet
   ]
@@ -117,7 +117,7 @@ module PEsubnet 'lib/VirtualNetwork-Subnet.bicep' = {
   }
 }
 
-module OnPremVNetGW 'lib/VirtualNetworkGateway.bicep' = {
+module OnPremVNetGW 'src/VirtualNetworkGateway.bicep' = {
   dependsOn: [
     GWsubnet
   ]
@@ -130,7 +130,7 @@ module OnPremVNetGW 'lib/VirtualNetworkGateway.bicep' = {
   }
 }
  
-module HubVNetGW 'lib/VirtualNetworkGateway.bicep' = {
+module HubVNetGW 'src/VirtualNetworkGateway.bicep' = {
   scope: HubRG
   name:  HubVirtualNetworkGWName
   params: {
@@ -140,7 +140,7 @@ module HubVNetGW 'lib/VirtualNetworkGateway.bicep' = {
   }
 }
 
-module Hub2OnPremConnection 'lib/NetGwConnection.bicep' = {
+module Hub2OnPremConnection 'src/NetGwConnection.bicep' = {
   dependsOn: [
     OnPremVNetGW
     HubVNetGW
@@ -155,7 +155,7 @@ module Hub2OnPremConnection 'lib/NetGwConnection.bicep' = {
   }
 }
 
-module OnPrem2HubConnection 'lib/NetGwConnection.bicep' = {
+module OnPrem2HubConnection 'src/NetGwConnection.bicep' = {
   dependsOn: [
     OnPremVNetGW
     HubVNetGW
@@ -170,7 +170,7 @@ module OnPrem2HubConnection 'lib/NetGwConnection.bicep' = {
   }
 }
 
-module KV './lib/KV.bicep' = {
+module KV './src/KV.bicep' = {
   name: KVname
   scope: HubRG
   params: {
@@ -184,7 +184,7 @@ module KV './lib/KV.bicep' = {
   }
 }
 
-module adminPasswd './lib/Secret.bicep' = {
+module adminPasswd './src/Secret.bicep' = {
   dependsOn: [
     KV
   ]
@@ -197,7 +197,7 @@ module adminPasswd './lib/Secret.bicep' = {
   }
 }
 
-module Proxy './lib/UbuntuVM.bicep' = if (DeployProxy) {
+module Proxy './src/UbuntuVM.bicep' = if (DeployProxy) {
   dependsOn: [
     DMZsubnet
   ]
@@ -213,7 +213,7 @@ module Proxy './lib/UbuntuVM.bicep' = if (DeployProxy) {
   }
 }
 
-module NoInternetOnPrem 'lib/AddNsgRule.bicep' = if (DeployProxy) {
+module NoInternetOnPrem 'src/AddNsgRule.bicep' = if (DeployProxy) {
   dependsOn: [
     Proxy
   ]

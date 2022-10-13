@@ -40,7 +40,7 @@ resource HubRG 'Microsoft.Resources/resourceGroups@2021-01-01' = {
   location: location
 }
 
-module HubRT 'lib/RouteTable.bicep' = {
+module HubRT 'src/RouteTable.bicep' = {
   scope: HubRG
   name: 'HubRT'
   params: {
@@ -49,7 +49,7 @@ module HubRT 'lib/RouteTable.bicep' = {
   }
 }
 
-module Route2FwGwHub 'lib/RouteToFW.bicep' = if (DeployFirewall) {
+module Route2FwGwHub 'src/RouteToFW.bicep' = if (DeployFirewall) {
   dependsOn: [
     AzFW
   ]
@@ -63,7 +63,7 @@ module Route2FwGwHub 'lib/RouteToFW.bicep' = if (DeployFirewall) {
   }
 }
 
-module HubVnet './lib/HubVNetwork.bicep' = {
+module HubVnet './src/HubVNetwork.bicep' = {
   name: HubVnetName
   scope: HubRG
   params: {
@@ -87,7 +87,7 @@ module HubVnet './lib/HubVNetwork.bicep' = {
   }
 }
 
-module NoInternetHub 'lib/AddNsgRule.bicep' = if (DeployFirewall) {
+module NoInternetHub 'src/AddNsgRule.bicep' = if (DeployFirewall) {
   dependsOn: [
     HubVnet
   ]
@@ -111,7 +111,7 @@ module NoInternetHub 'lib/AddNsgRule.bicep' = if (DeployFirewall) {
 }
 
 
-module Resolver 'lib/Resolver.bicep' = {
+module Resolver 'src/Resolver.bicep' = {
   dependsOn: [
     HubVnet
   ]
@@ -128,7 +128,7 @@ module Resolver 'lib/Resolver.bicep' = {
   }
 }
 
-module AzFW 'lib/AzFW.bicep' = if (DeployFirewall) {
+module AzFW 'src/AzFW.bicep' = if (DeployFirewall) {
   dependsOn: [
     Resolver
   ]
@@ -141,7 +141,7 @@ module AzFW 'lib/AzFW.bicep' = if (DeployFirewall) {
   }
 }
 
-module Bastion 'lib/AzBastion.bicep' = if (DeployBastion) {
+module Bastion 'src/AzBastion.bicep' = if (DeployBastion) {
   dependsOn: [
     Resolver
   ]

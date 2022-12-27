@@ -8,4 +8,5 @@ Disporre di un ambiente di test su Azure diventa perciò necessario per svolgere
 In questo repository pubblicheremo una serie di script Bicep per realizzare la seconda opzione. 
 
 Prova a farne il deploy sulla tua sottoscrizione
+
 [![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fgderossilive%2FBaseStamp%2Fmain%2FARM%2Fazuredeploy.json)

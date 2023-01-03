@@ -14,7 +14,7 @@
     },
     "MyIP": {
       "type": "string",
-      "defaultValue": "*"
+      "defaultValue": "81.56.1.134"
     },
     "Location": {
       "type": "string",

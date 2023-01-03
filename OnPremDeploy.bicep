@@ -38,6 +38,7 @@ var KVname = 'KV-${Seed}'
 resource HubRG 'Microsoft.Resources/resourceGroups@2021-01-01' existing = {
   name: HubRGname
 }
+
 resource OnPremRG 'Microsoft.Resources/resourceGroups@2021-01-01' = {
   name: OnPremRGname
   location: location

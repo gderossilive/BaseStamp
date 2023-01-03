@@ -5,76 +5,60 @@
     "_generator": {
       "name": "bicep",
       "version": "0.13.1.58284",
-      "templateHash": "6061750539390420693"
+      "templateHash": "6597615334654074965"
     }
   },
   "parameters": {
     "Seed": {
-      "type": "string",
-      "defaultValue": "Az1"
+      "type": "string"
     },
     "MyIP": {
       "type": "string"
     },
     "Location": {
-      "type": "string",
-      "defaultValue": "northeurope"
+      "type": "string"
     },
     "adminPassword": {
-      "type": "secureString",
-      "defaultValue": "P@ssw0rd123!"
+      "type": "secureString"
     },
     "HubRgPostfix": {
-      "type": "string",
-      "defaultValue": "Hub"
+      "type": "string"
     },
     "HubVnetPrefix": {
-      "type": "string",
-      "defaultValue": "Hub-VNet"
+      "type": "string"
     },
     "InSubnetPrefix": {
-      "type": "string",
-      "defaultValue": "dns-inbound"
+      "type": "string"
     },
     "OutSubnetPrefix": {
-      "type": "string",
-      "defaultValue": "dns-outbound"
+      "type": "string"
     },
     "PEsubnetName": {
-      "type": "string",
-      "defaultValue": "PE-subnet"
+      "type": "string"
     },
     "HubVnetAddressPrefix": {
-      "type": "string",
-      "defaultValue": "10.10.0.0/16"
+      "type": "string"
     },
     "CustomDNSserver": {
-      "type": "string",
-      "defaultValue": "10.10.100.4"
+      "type": "string"
     },
     "DNSInboundSubnetAddressPrefix": {
-      "type": "string",
-      "defaultValue": "10.10.100.0/28"
+      "type": "string"
     },
     "DNSOutboundSubnetAddressPrefix": {
-      "type": "string",
-      "defaultValue": "10.10.100.16/28"
+      "type": "string"
     },
     "BastionSubnetAddressPrefix": {
-      "type": "string",
-      "defaultValue": "10.10.0.64/26"
+      "type": "string"
     },
     "PEsubnetAddressPrefix": {
-      "type": "string",
-      "defaultValue": "10.10.1.0/24"
+      "type": "string"
     },
     "FirewallSubnetAddressPrefix": {
-      "type": "string",
-      "defaultValue": "10.10.2.0/24"
+      "type": "string"
     },
     "GatewaySubnetAddressPrefix": {
-      "type": "string",
-      "defaultValue": "10.10.3.0/24"
+      "type": "string"
     },
     "DeployFirewall": {
       "type": "bool",
@@ -85,8 +69,7 @@
       "defaultValue": false
     },
     "SpokeRgPostfix": {
-      "type": "string",
-      "defaultValue": "Spokes"
+      "type": "string"
     },
     "SpokesNumber": {
       "type": "int",
@@ -101,32 +84,25 @@
       "defaultValue": false
     },
     "OnPremRgPostfix": {
-      "type": "string",
-      "defaultValue": "OnPrem"
+      "type": "string"
     },
     "MyObjectId": {
-      "type": "string",
-      "defaultValue": "172b999c-c842-4969-9202-542c4c358035"
+      "type": "string"
     },
     "OnPremVnetPrefix": {
-      "type": "string",
-      "defaultValue": "OnPrem-VLan"
+      "type": "string"
     },
     "OnPremVnetAddressPrefix": {
-      "type": "string",
-      "defaultValue": "192.168.0.0/16"
+      "type": "string"
     },
     "OnPremGWvnetSubnetAddressPrefix": {
-      "type": "string",
-      "defaultValue": "192.168.0.0/26"
+      "type": "string"
     },
     "OnPremPEvnetSubnetAddressPrefix": {
-      "type": "string",
-      "defaultValue": "192.168.1.0/24"
+      "type": "string"
     },
     "OnPremDMZvnetSubnetAddressPrefix": {
-      "type": "string",
-      "defaultValue": "192.168.2.0/24"
+      "type": "string"
     }
   },
   "variables": {
@@ -1959,6 +1935,7 @@
       }
     },
     {
+      "condition": "[greater(parameters('SpokesNumber'), 0)]",
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2020-10-01",
       "name": "[format('SpokesDeploy-{0}', parameters('Seed'))]",

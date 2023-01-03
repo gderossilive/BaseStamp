@@ -16,49 +16,64 @@
       "type": "string"
     },
     "Location": {
-      "type": "string"
+      "type": "string",
+      "defaultValue": "eastus"
     },
     "adminPassword": {
-      "type": "secureString"
+      "type": "secureString",
+      "defaultValue": "P@ssw0rd123!"
     },
     "HubRgPostfix": {
-      "type": "string"
+      "type": "string",
+      "defaultValue": "Hub"
     },
     "HubVnetPrefix": {
-      "type": "string"
+      "type": "string",
+      "defaultValue": "Hub-VNet"
     },
     "InSubnetPrefix": {
-      "type": "string"
+      "type": "string",
+      "defaultValue": "dns-inbound"
     },
     "OutSubnetPrefix": {
-      "type": "string"
+      "type": "string",
+      "defaultValue": "dns-outbound"
     },
     "PEsubnetName": {
-      "type": "string"
+      "type": "string",
+      "defaultValue": "PE-subnet"
     },
     "HubVnetAddressPrefix": {
-      "type": "string"
+      "type": "string",
+      "defaultValue": "10.10.0.0/16"
     },
     "CustomDNSserver": {
-      "type": "string"
+      "type": "string",
+      "defaultValue": "10.10.100.4"
     },
     "DNSInboundSubnetAddressPrefix": {
-      "type": "string"
+      "type": "string",
+      "defaultValue": "10.10.100.0/28"
     },
     "DNSOutboundSubnetAddressPrefix": {
-      "type": "string"
+      "type": "string",
+      "defaultValue": "10.10.100.16/28"
     },
     "BastionSubnetAddressPrefix": {
-      "type": "string"
+      "type": "string",
+      "defaultValue": "10.10.0.64/26"
     },
     "PEsubnetAddressPrefix": {
-      "type": "string"
+      "type": "string",
+      "defaultValue": "10.10.1.0/24"
     },
     "FirewallSubnetAddressPrefix": {
-      "type": "string"
+      "type": "string",
+      "defaultValue": "10.10.2.0/24"
     },
     "GatewaySubnetAddressPrefix": {
-      "type": "string"
+      "type": "string",
+      "defaultValue": "10.10.3.0/24"
     },
     "DeployFirewall": {
       "type": "bool",
@@ -69,7 +84,8 @@
       "defaultValue": false
     },
     "SpokeRgPostfix": {
-      "type": "string"
+      "type": "string",
+      "defaultValue": "Spokes"
     },
     "SpokesNumber": {
       "type": "int",
@@ -84,25 +100,32 @@
       "defaultValue": false
     },
     "OnPremRgPostfix": {
-      "type": "string"
+      "type": "string",
+      "defaultValue": "OnPrem"
     },
     "MyObjectId": {
-      "type": "string"
+      "type": "string",
+      "defaultValue": "172b999c-c842-4969-9202-542c4c358035"
     },
     "OnPremVnetPrefix": {
-      "type": "string"
+      "type": "string",
+      "defaultValue": "OnPrem-VLan"
     },
     "OnPremVnetAddressPrefix": {
-      "type": "string"
+      "type": "string",
+      "defaultValue": "192.168.0.0/16"
     },
     "OnPremGWvnetSubnetAddressPrefix": {
-      "type": "string"
+      "type": "string",
+      "defaultValue": "192.168.0.0/26"
     },
     "OnPremPEvnetSubnetAddressPrefix": {
-      "type": "string"
+      "type": "string",
+      "defaultValue": "192.168.1.0/24"
     },
     "OnPremDMZvnetSubnetAddressPrefix": {
-      "type": "string"
+      "type": "string",
+      "defaultValue": "192.168.2.0/24"
     }
   },
   "variables": {
